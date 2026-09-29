@@ -1,14 +1,14 @@
 schemaVersion: 1
 modules:
   - moduleId: zalava-module-time
-    version: 0.1.0-alpha.1
+    version: 0.1.0-alpha.2
     displayName: Time
     description: Timezone-aware current-time and conversion tools backed by the JDK time API
     supportUrl: https://github.com/Zalava/zalava-module-time
     artifact:
       groupId: org.zalava.modules
       artifactId: zalava-module-time
-      version: 0.1.0-alpha.1
+      version: 0.1.0-alpha.2
     source:
       repository: https://github.com/Zalava/zalava-module-time.git
       license: Apache-2.0

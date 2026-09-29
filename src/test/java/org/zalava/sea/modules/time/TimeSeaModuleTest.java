@@ -8,9 +8,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.zalava.SeaOperationResult;
-import org.zalava.SeaProvider;
-import org.zalava.SeaToolDescriptor;
+import org.zalava.ZalavaOperationResult;
+import org.zalava.ZalavaProvider;
+import org.zalava.ZalavaToolDescriptor;
 import org.zalava.testing.ConfigFixture;
 import org.zalava.testing.ModuleContractKit;
 import org.zalava.testing.ProviderFixture;
@@ -69,16 +69,16 @@ class TimeSeaModuleTest {
     @Test
     void createsTheReadOnlyProviderAndDeclaresItsTools() {
         try (ProviderFixture providers = kit.providers(ConfigFixture.empty())) {
-            SeaProvider provider = providers.requireProvider(PROVIDER_ID);
+            ZalavaProvider provider = providers.requireProvider(PROVIDER_ID);
 
             assertThat(providers.providers()).hasSize(1);
             assertThat(provider.descriptor().moduleId()).isEqualTo(MODULE_ID);
             assertThat(provider.descriptor().providerType()).isEqualTo("time");
-            assertThat(provider.listTools().stream().map(SeaToolDescriptor::name))
+            assertThat(provider.listTools().stream().map(ZalavaToolDescriptor::name))
                     .containsExactly(CURRENT_TIME, CONVERT_TIME);
             assertThat(provider.listTools()).allSatisfy(tool -> assertThat(tool.sideEffecting()).isFalse());
 
-            SeaToolDescriptor convert = providers.requireTool(PROVIDER_ID, CONVERT_TIME);
+            ZalavaToolDescriptor convert = providers.requireTool(PROVIDER_ID, CONVERT_TIME);
             assertThat(convert.inputSchema()).containsEntry("required", List.of("targetZoneId"));
         }
     }
@@ -97,7 +97,7 @@ class TimeSeaModuleTest {
     @Test
     void defaultsCurrentTimeToUtcWithConsistentInstantAndZone() {
         try (ProviderFixture providers = kit.providers()) {
-            SeaOperationResult result = providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments());
+            ZalavaOperationResult result = providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments());
             assertThat(result.success()).isTrue();
             Map<String, Object> content = content(result);
 
@@ -110,7 +110,7 @@ class TimeSeaModuleTest {
     @Test
     void currentTimeUsesTheRequestedIanaZone() {
         try (ProviderFixture providers = kit.providers()) {
-            SeaOperationResult result = providers.invoke(PROVIDER_ID, CURRENT_TIME,
+            ZalavaOperationResult result = providers.invoke(PROVIDER_ID, CURRENT_TIME,
                     arguments().put("zoneId", "Europe/Madrid"));
             assertThat(result.success()).isTrue();
             Map<String, Object> content = content(result);
@@ -124,7 +124,7 @@ class TimeSeaModuleTest {
     @Test
     void convertsFixedInstantToFixedTargetZone() {
         try (ProviderFixture providers = kit.providers()) {
-            SeaOperationResult result = providers.invoke(PROVIDER_ID, CONVERT_TIME,
+            ZalavaOperationResult result = providers.invoke(PROVIDER_ID, CONVERT_TIME,
                     arguments().put("instant", "2026-01-01T00:00:00Z").put("targetZoneId", "America/New_York"));
             assertThat(result.success()).isTrue();
             Map<String, Object> content = content(result);
@@ -140,7 +140,7 @@ class TimeSeaModuleTest {
     @Test
     void convertsFixedZonedDateTimeToFixedTargetZone() {
         try (ProviderFixture providers = kit.providers()) {
-            SeaOperationResult result = providers.invoke(PROVIDER_ID, CONVERT_TIME,
+            ZalavaOperationResult result = providers.invoke(PROVIDER_ID, CONVERT_TIME,
                     arguments().put("zonedDateTime", "2026-06-17T14:34:56+02:00[Europe/Madrid]")
                             .put("targetZoneId", "UTC"));
             assertThat(result.success()).isTrue();
@@ -172,12 +172,12 @@ class TimeSeaModuleTest {
     @Test
     void rejectsMalformedDateTimeAndUnknownZones() {
         try (ProviderFixture providers = kit.providers()) {
-            SeaOperationResult malformed = providers.invoke(PROVIDER_ID, CONVERT_TIME,
+            ZalavaOperationResult malformed = providers.invoke(PROVIDER_ID, CONVERT_TIME,
                     arguments().put("instant", "not-a-date").put("targetZoneId", "UTC"));
             assertThat(malformed.success()).isFalse();
             assertThat(content(malformed)).containsEntry("error", "Invalid date-time value");
 
-            SeaOperationResult unknown = providers.invoke(PROVIDER_ID, CURRENT_TIME,
+            ZalavaOperationResult unknown = providers.invoke(PROVIDER_ID, CURRENT_TIME,
                     arguments().put("zoneId", "Mars/Base"));
             assertThat(unknown.success()).isFalse();
             assertThat(content(unknown)).isEqualTo(Map.of("error", "Unknown IANA time zone: Mars/Base"));
@@ -189,7 +189,7 @@ class TimeSeaModuleTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> content(SeaOperationResult result) {
+    private static Map<String, Object> content(ZalavaOperationResult result) {
         return (Map<String, Object>) result.content();
     }
 
