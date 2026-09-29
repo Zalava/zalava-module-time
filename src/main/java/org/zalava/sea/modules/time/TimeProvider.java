@@ -4,9 +4,9 @@ import tools.jackson.databind.JsonNode;
 import org.zalava.InvocationContext;
 import org.zalava.ProviderCapabilities;
 import org.zalava.ProviderDescriptor;
-import org.zalava.SeaOperationResult;
-import org.zalava.SeaProvider;
-import org.zalava.SeaToolDescriptor;
+import org.zalava.ZalavaOperationResult;
+import org.zalava.ZalavaProvider;
+import org.zalava.ZalavaToolDescriptor;
 
 import java.time.Clock;
 import java.time.DateTimeException;
@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
-public final class TimeProvider implements SeaProvider {
+public final class TimeProvider implements ZalavaProvider {
 
     static final String PROVIDER_ID = "jdk-time";
     static final String CURRENT_TIME = "current_time";
@@ -25,7 +25,7 @@ public final class TimeProvider implements SeaProvider {
 
     private final Clock clock;
     private final ProviderDescriptor descriptor;
-    private final List<SeaToolDescriptor> tools;
+    private final List<ZalavaToolDescriptor> tools;
 
     TimeProvider(Clock clock) {
         this.clock = clock;
@@ -53,56 +53,56 @@ public final class TimeProvider implements SeaProvider {
     }
 
     @Override
-    public List<SeaToolDescriptor> listTools() {
+    public List<ZalavaToolDescriptor> listTools() {
         return tools;
     }
 
     @Override
-    public SeaOperationResult callTool(String toolName, JsonNode arguments, InvocationContext context) {
+    public ZalavaOperationResult callTool(String toolName, JsonNode arguments, InvocationContext context) {
         return switch (toolName) {
             case CURRENT_TIME -> currentTime(arguments);
             case CONVERT_TIME -> convertTime(arguments);
-            default -> SeaOperationResult.failure(Map.of("error", "Unsupported tool: " + toolName));
+            default -> ZalavaOperationResult.failure(Map.of("error", "Unsupported tool: " + toolName));
         };
     }
 
-    private SeaOperationResult currentTime(JsonNode arguments) {
+    private ZalavaOperationResult currentTime(JsonNode arguments) {
         ZoneId zone;
         try {
             zone = zone(arguments, "zoneId", ZoneId.of("UTC"));
         } catch (IllegalArgumentException ex) {
-            return SeaOperationResult.failure(Map.of("error", ex.getMessage()));
+            return ZalavaOperationResult.failure(Map.of("error", ex.getMessage()));
         }
         Instant instant = clock.instant();
-        return SeaOperationResult.success(timePayload(instant, zone));
+        return ZalavaOperationResult.success(timePayload(instant, zone));
     }
 
-    private SeaOperationResult convertTime(JsonNode arguments) {
+    private ZalavaOperationResult convertTime(JsonNode arguments) {
         if (arguments == null || arguments.isNull()) {
-            return SeaOperationResult.failure(Map.of("error", "Arguments are required"));
+            return ZalavaOperationResult.failure(Map.of("error", "Arguments are required"));
         }
         ZoneId targetZone;
         try {
             targetZone = zone(arguments, "targetZoneId", null);
         } catch (IllegalArgumentException ex) {
-            return SeaOperationResult.failure(Map.of("error", ex.getMessage()));
+            return ZalavaOperationResult.failure(Map.of("error", ex.getMessage()));
         }
         if (targetZone == null) {
-            return SeaOperationResult.failure(Map.of("error", "targetZoneId is required"));
+            return ZalavaOperationResult.failure(Map.of("error", "targetZoneId is required"));
         }
         boolean hasInstant = hasText(arguments, "instant");
         boolean hasZonedDateTime = hasText(arguments, "zonedDateTime");
         if (hasInstant == hasZonedDateTime) {
-            return SeaOperationResult.failure(Map.of(
+            return ZalavaOperationResult.failure(Map.of(
                     "error", "Provide exactly one of instant or zonedDateTime"));
         }
         try {
             Instant instant = hasInstant
                     ? Instant.parse(arguments.path("instant").asText())
                     : parseZonedInstant(arguments.path("zonedDateTime").asText());
-            return SeaOperationResult.success(timePayload(instant, targetZone));
+            return ZalavaOperationResult.success(timePayload(instant, targetZone));
         } catch (DateTimeException ex) {
-            return SeaOperationResult.failure(Map.of(
+            return ZalavaOperationResult.failure(Map.of(
                     "error", "Invalid date-time value",
                     "detail", ex.getMessage()));
         }
@@ -140,8 +140,8 @@ public final class TimeProvider implements SeaProvider {
                 "zonedDateTime", zoned.toString());
     }
 
-    private SeaToolDescriptor currentTimeTool() {
-        return new SeaToolDescriptor(
+    private ZalavaToolDescriptor currentTimeTool() {
+        return new ZalavaToolDescriptor(
                 CURRENT_TIME,
                 "Return the current time for an optional IANA time zone",
                 false,
@@ -155,8 +155,8 @@ public final class TimeProvider implements SeaProvider {
                         "additionalProperties", false));
     }
 
-    private SeaToolDescriptor convertTimeTool() {
-        return new SeaToolDescriptor(
+    private ZalavaToolDescriptor convertTimeTool() {
+        return new ZalavaToolDescriptor(
                 CONVERT_TIME,
                 "Convert an ISO instant or zoned date-time to a target IANA time zone",
                 false,

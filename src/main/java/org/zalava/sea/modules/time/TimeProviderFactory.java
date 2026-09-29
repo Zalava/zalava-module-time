@@ -3,7 +3,7 @@ package org.zalava.modules.time;
 import org.zalava.ProviderFactory;
 import org.zalava.ProviderFactoryContext;
 import org.zalava.ProviderFactoryDescriptor;
-import org.zalava.SeaProvider;
+import org.zalava.ZalavaProvider;
 
 import java.time.Clock;
 import java.util.List;
@@ -34,7 +34,7 @@ public final class TimeProviderFactory implements ProviderFactory {
     }
 
     @Override
-    public List<SeaProvider> createProviders(ProviderFactoryContext context) {
+    public List<ZalavaProvider> createProviders(ProviderFactoryContext context) {
         return List.of(new TimeProvider(clock));
     }
 }
