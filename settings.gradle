@@ -5,21 +5,24 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenCentral()
-        maven {
-            url = uri(providers.gradleProperty('moduleApiRepositoryUrl')
-                    .orElse('https://zalava.github.io/zalava-maven/').get())
-            credentials(PasswordCredentials) {
-                username = providers.gradleProperty('gpr.user')
-                        .orElse(providers.environmentVariable('GITHUB_ACTOR')).orNull
-                password = providers.gradleProperty('gpr.key')
-                        .orElse(providers.environmentVariable('ZALAVA_MODULE_API_TOKEN'))
-                        .orElse(providers.environmentVariable('ZALAVA_PUBLISH_TOKEN')).orNull
-            }
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    mavenCentral()
+    maven {
+      def moduleApiRepositoryUrl = providers.gradleProperty('moduleApiRepositoryUrl')
+          .orElse('https://zalava.github.io/zalava-maven/').get()
+      url = uri(moduleApiRepositoryUrl)
+      if (moduleApiRepositoryUrl.startsWith('https://maven.pkg.github.com/')) {
+        credentials(PasswordCredentials) {
+          username = providers.gradleProperty('gpr.user')
+              .orElse(providers.environmentVariable('GITHUB_ACTOR')).orNull
+          password = providers.gradleProperty('gpr.key')
+              .orElse(providers.environmentVariable('ZALAVA_MODULE_API_TOKEN'))
+              .orElse(providers.environmentVariable('ZALAVA_PUBLISH_TOKEN')).orNull
         }
+      }
     }
+  }
 }
 
 rootProject.name = 'zalava-module-time'
