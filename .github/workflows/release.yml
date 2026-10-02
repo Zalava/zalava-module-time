@@ -20,6 +20,9 @@ jobs:
           java-version: '25'
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare pinned SDK candidate (not released acceptance)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: ./.github/actions/sdk-candidate
       - run: ./gradlew check
         env:
           ZALAVA_MODULE_API_TOKEN: ""
@@ -39,6 +42,9 @@ jobs:
           java-version: '25'
           cache: gradle
       - uses: gradle/actions/setup-gradle@v4
+      - name: Prepare pinned SDK candidate (not released acceptance)
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: ./.github/actions/sdk-candidate
       - run: ./gradlew check
       - run: sha256sum build/libs/zalava-module-time-*.jar > build/zalava-module-time.sha256
       - uses: softprops/action-gh-release@v2

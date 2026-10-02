@@ -11,12 +11,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zalava.ZalavaOperationResult;
-import org.zalava.ZalavaProvider;
-import org.zalava.ZalavaToolDescriptor;
-import org.zalava.testing.ConfigFixture;
-import org.zalava.testing.ModuleContractKit;
-import org.zalava.testing.ProviderFixture;
+import org.zalava.api.ZalavaOperationResult;
+import org.zalava.api.ZalavaProvider;
+import org.zalava.api.ZalavaToolDescriptor;
+import org.zalava.api.testing.ConfigFixture;
+import org.zalava.api.testing.ModuleContractKit;
+import org.zalava.api.testing.ProviderFixture;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -101,7 +101,15 @@ class TimeSeaModuleTest {
   @Test
   void defaultsCurrentTimeToUtcWithConsistentInstantAndZone() {
     try (ProviderFixture providers = kit.providers()) {
-      ZalavaOperationResult result = providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments());
+      ZalavaOperationResult result =
+          providers.invoke(
+              PROVIDER_ID,
+              CURRENT_TIME,
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments(),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(result.success()).isTrue();
       Map<String, Object> content = content(result);
 
@@ -115,7 +123,14 @@ class TimeSeaModuleTest {
   void currentTimeUsesTheRequestedIanaZone() {
     try (ProviderFixture providers = kit.providers()) {
       ZalavaOperationResult result =
-          providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments().put("zoneId", "Europe/Madrid"));
+          providers.invoke(
+              PROVIDER_ID,
+              CURRENT_TIME,
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments().put("zoneId", "Europe/Madrid"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(result.success()).isTrue();
       Map<String, Object> content = content(result);
 
@@ -132,9 +147,13 @@ class TimeSeaModuleTest {
           providers.invoke(
               PROVIDER_ID,
               CONVERT_TIME,
-              arguments()
-                  .put("instant", "2026-01-01T00:00:00Z")
-                  .put("targetZoneId", "America/New_York"));
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments()
+                          .put("instant", "2026-01-01T00:00:00Z")
+                          .put("targetZoneId", "America/New_York"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(result.success()).isTrue();
       Map<String, Object> content = content(result);
 
@@ -153,9 +172,13 @@ class TimeSeaModuleTest {
           providers.invoke(
               PROVIDER_ID,
               CONVERT_TIME,
-              arguments()
-                  .put("zonedDateTime", "2026-06-17T14:34:56+02:00[Europe/Madrid]")
-                  .put("targetZoneId", "UTC"));
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments()
+                          .put("zonedDateTime", "2026-06-17T14:34:56+02:00[Europe/Madrid]")
+                          .put("targetZoneId", "UTC"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(result.success()).isTrue();
       Map<String, Object> content = content(result);
 
@@ -173,7 +196,13 @@ class TimeSeaModuleTest {
       assertThat(
               content(
                   providers.invoke(
-                      PROVIDER_ID, CONVERT_TIME, arguments().put("targetZoneId", "UTC"))))
+                      PROVIDER_ID,
+                      CONVERT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().put("targetZoneId", "UTC"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .isEqualTo(Map.of("error", "Provide exactly one of instant or zonedDateTime"));
 
       assertThat(
@@ -181,10 +210,14 @@ class TimeSeaModuleTest {
                   providers.invoke(
                       PROVIDER_ID,
                       CONVERT_TIME,
-                      arguments()
-                          .put("instant", "2026-01-01T00:00:00Z")
-                          .put("zonedDateTime", "2026-01-01T01:00:00+01:00[Europe/Madrid]")
-                          .put("targetZoneId", "UTC"))))
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments()
+                                  .put("instant", "2026-01-01T00:00:00Z")
+                                  .put("zonedDateTime", "2026-01-01T01:00:00+01:00[Europe/Madrid]")
+                                  .put("targetZoneId", "UTC"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .isEqualTo(Map.of("error", "Provide exactly one of instant or zonedDateTime"));
     }
   }
@@ -196,12 +229,23 @@ class TimeSeaModuleTest {
           providers.invoke(
               PROVIDER_ID,
               CONVERT_TIME,
-              arguments().put("instant", "not-a-date").put("targetZoneId", "UTC"));
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments().put("instant", "not-a-date").put("targetZoneId", "UTC"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(malformed.success()).isFalse();
       assertThat(content(malformed)).containsEntry("error", "Invalid date-time value");
 
       ZalavaOperationResult unknown =
-          providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments().put("zoneId", "Mars/Base"));
+          providers.invoke(
+              PROVIDER_ID,
+              CURRENT_TIME,
+              new tools.jackson.databind.json.JsonMapper()
+                  .convertValue(
+                      arguments().put("zoneId", "Mars/Base"),
+                      new tools.jackson.core.type.TypeReference<
+                          java.util.Map<String, Object>>() {}));
       assertThat(unknown.success()).isFalse();
       assertThat(content(unknown)).isEqualTo(Map.of("error", "Unknown IANA time zone: Mars/Base"));
     }
@@ -218,28 +262,82 @@ class TimeSeaModuleTest {
       assertThat(provider.capabilities().supportsTools()).isTrue();
       assertThat(
               provider
-                  .callTool(CURRENT_TIME, null, org.zalava.InvocationContext.system())
+                  .callTool(
+                      CURRENT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              null,
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}),
+                      org.zalava.api.InvocationContext.system())
                   .success())
           .isTrue();
       assertThat(
-              providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments().putNull("zoneId")).success())
+              providers
+                  .invoke(
+                      PROVIDER_ID,
+                      CURRENT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().putNull("zoneId"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))
+                  .success())
           .isTrue();
       assertThat(
-              content(providers.invoke(PROVIDER_ID, CURRENT_TIME, arguments().put("zoneId", " "))))
+              content(
+                  providers.invoke(
+                      PROVIDER_ID,
+                      CURRENT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().put("zoneId", " "),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .containsEntry("zoneId", "UTC");
       assertThat(
-              content(provider.callTool(CONVERT_TIME, null, org.zalava.InvocationContext.system())))
+              content(
+                  provider.callTool(
+                      CONVERT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              null,
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}),
+                      org.zalava.api.InvocationContext.system())))
           .containsEntry("error", "Arguments are required");
-      assertThat(content(providers.invoke(PROVIDER_ID, CONVERT_TIME, arguments())))
+      assertThat(
+              content(
+                  providers.invoke(
+                      PROVIDER_ID,
+                      CONVERT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments(),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .containsEntry("error", "targetZoneId is required");
       assertThat(
               content(
                   providers.invoke(
-                      PROVIDER_ID, CONVERT_TIME, arguments().put("targetZoneId", "Mars/Base"))))
+                      PROVIDER_ID,
+                      CONVERT_TIME,
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments().put("targetZoneId", "Mars/Base"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .containsEntry("error", "Unknown IANA time zone: Mars/Base");
       assertThat(
               provider
-                  .callTool("unknown", arguments(), org.zalava.InvocationContext.system())
+                  .callTool(
+                      "unknown",
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments(),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}),
+                      org.zalava.api.InvocationContext.system())
                   .success())
           .isFalse();
       assertThat(
@@ -247,9 +345,13 @@ class TimeSeaModuleTest {
                   providers.invoke(
                       PROVIDER_ID,
                       CONVERT_TIME,
-                      arguments()
-                          .put("zonedDateTime", "2026-01-01T01:00:00+01:00")
-                          .put("targetZoneId", "UTC"))))
+                      new tools.jackson.databind.json.JsonMapper()
+                          .convertValue(
+                              arguments()
+                                  .put("zonedDateTime", "2026-01-01T01:00:00+01:00")
+                                  .put("targetZoneId", "UTC"),
+                              new tools.jackson.core.type.TypeReference<
+                                  java.util.Map<String, Object>>() {}))))
           .containsEntry("instant", "2026-01-01T00:00:00Z");
     }
   }
