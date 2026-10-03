@@ -8,13 +8,13 @@ import org.zalava.api.ModuleDescriptor;
 import org.zalava.api.ProviderFactory;
 import org.zalava.api.ZalavaModule;
 
-public final class TimeSeaModule implements ZalavaModule {
+public final class TimeZalavaModule implements ZalavaModule {
 
   static final String MODULE_ID = "zalava-module-time";
 
   private final List<ProviderFactory> providerFactories;
 
-  public TimeSeaModule() {
+  public TimeZalavaModule() {
     this.providerFactories = List.of(new TimeProviderFactory());
   }
 
@@ -34,7 +34,7 @@ public final class TimeSeaModule implements ZalavaModule {
 
   static String version() {
     Properties properties = new Properties();
-    try (InputStream input = TimeSeaModule.class.getResourceAsStream("/module.properties")) {
+    try (InputStream input = TimeZalavaModule.class.getResourceAsStream("/module.properties")) {
       if (input == null) {
         throw new IllegalStateException("Missing module version metadata");
       }

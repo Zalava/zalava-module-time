@@ -26,7 +26,7 @@ public final class TimeProviderFactory implements ProviderFactory {
   public ProviderFactoryDescriptor descriptor() {
     return new ProviderFactoryDescriptor(
         FACTORY_ID,
-        TimeSeaModule.MODULE_ID,
+        TimeZalavaModule.MODULE_ID,
         PROVIDER_TYPE,
         "JDK Time",
         "Creates a read-only time provider backed by java.time");

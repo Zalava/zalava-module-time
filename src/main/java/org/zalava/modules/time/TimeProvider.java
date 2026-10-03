@@ -31,11 +31,11 @@ public final class TimeProvider implements ZalavaProvider {
     this.descriptor =
         new ProviderDescriptor(
             PROVIDER_ID,
-            TimeSeaModule.MODULE_ID,
+            TimeZalavaModule.MODULE_ID,
             TimeProviderFactory.PROVIDER_TYPE,
             "JDK Time",
             "Read-only provider for current time and timezone conversion",
-            TimeSeaModule.version(),
+            TimeZalavaModule.version(),
             ProviderCapabilities.toolsOnly(),
             List.of("read-only", "time"),
             Map.of("clock", "system"));
