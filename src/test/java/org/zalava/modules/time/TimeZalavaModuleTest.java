@@ -23,9 +23,9 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * Exercises the real built module JAR at the stable {@code module-api} boundary through the
  * released contract kit. Host-owned resolution, validation, permissions and persistence stay
- * covered by SEA.
+ * covered by Zalava.
  */
-class TimeSeaModuleTest {
+class TimeZalavaModuleTest {
 
   private static final String MODULE_ID = "zalava-module-time";
   private static final String FACTORY_ID = "jdk-time";
